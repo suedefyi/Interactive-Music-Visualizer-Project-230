@@ -3,28 +3,25 @@ import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiBarChart, FiCircle, FiActivity, FiZap, FiSun, FiMoon, FiTrendingUp, FiTarget, FiLayers, FiGrid } = FiIcons;
+const { FiBarChart, FiCircle, FiActivity, FiZap, FiSun, FiTarget } = FiIcons;
 
+// Reduced visualizations for better performance
 const visualizations = [
   { id: 'bars', name: 'Frequency Bars', icon: FiBarChart },
   { id: 'circle', name: 'Circular Spectrum', icon: FiCircle },
   { id: 'waveform', name: 'Waveform', icon: FiActivity },
   { id: 'particles', name: 'Particles', icon: FiZap },
   { id: 'spiral', name: 'Spiral', icon: FiSun },
-  { id: 'galaxy', name: 'Galaxy', icon: FiMoon },
-  { id: 'tunnel', name: 'Tunnel', icon: FiTrendingUp },
-  { id: 'mandala', name: 'Mandala', icon: FiTarget },
-  { id: 'crystals', name: 'Crystals', icon: FiLayers },
-  { id: 'matrix', name: 'Matrix', icon: FiGrid }
+  { id: 'mandala', name: 'Mandala', icon: FiTarget }
 ];
 
 const ControlPanel = ({ 
   selectedVisualization, 
   onVisualizationChange, 
   settings, 
-  onSettingChange,
-  isListening,
-  onMicrophoneToggle
+  onSettingChange, 
+  isListening, 
+  onMicrophoneToggle 
 }) => {
   const Slider = ({ label, value, onChange, min = 0, max = 100, step = 1 }) => (
     <div className="mb-4">
@@ -46,13 +43,13 @@ const ControlPanel = ({
 
   const Knob = ({ label, value, onChange, min = 0, max = 100 }) => {
     const angle = ((value - min) / (max - min)) * 270 - 135;
-    
+
     return (
       <div className="flex flex-col items-center">
         <label className="text-white/80 text-xs mb-2">{label}</label>
         <div className="relative w-12 h-12">
           <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 relative">
-            <div
+            <div 
               className="absolute top-1 left-1/2 w-0.5 h-4 bg-blue-400 origin-bottom transform -translate-x-1/2"
               style={{ transform: `translateX(-50%) rotate(${angle}deg)` }}
             />
@@ -155,7 +152,7 @@ const ControlPanel = ({
           label="Blur"
           value={settings.blur}
           onChange={(value) => onSettingChange('blur', value)}
-          max={20}
+          max={10}
         />
       </div>
 
@@ -166,9 +163,9 @@ const ControlPanel = ({
             label="Particle Count"
             value={settings.particleCount}
             onChange={(value) => onSettingChange('particleCount', value)}
-            min={50}
-            max={500}
-            step={10}
+            min={25}
+            max={200}
+            step={5}
           />
         </div>
       )}

@@ -3,16 +3,20 @@ import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiMusic, FiMic, FiMicOff, FiSettings, FiHelpCircle, FiLogOut, FiEye, FiEyeOff } = FiIcons;
+const { FiMusic, FiMic, FiMicOff, FiSettings, FiHelpCircle, FiLogOut, FiEye, FiEyeOff, FiHeadphones, FiRadio } = FiIcons;
 
 const Header = ({ 
   user, 
   onLogout, 
   onShowGuide, 
   isListening, 
-  onMicrophoneToggle,
-  onToggleControls,
-  showControls
+  onMicrophoneToggle, 
+  onToggleControls, 
+  showControls,
+  onToggleMusicPlayer,
+  showMusicPlayer,
+  onToggleLofiBeat,
+  showLofiBeat
 }) => {
   return (
     <motion.header
@@ -29,6 +33,34 @@ const Header = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onToggleLofiBeat}
+            className={`p-2 rounded-lg transition-colors ${
+              showLofiBeat 
+                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={showLofiBeat ? 'Hide Lofi Beat Creator' : 'Show Lofi Beat Creator'}
+          >
+            <SafeIcon icon={FiRadio} />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onToggleMusicPlayer}
+            className={`p-2 rounded-lg transition-colors ${
+              showMusicPlayer 
+                ? 'bg-purple-500 hover:bg-purple-600 text-white' 
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={showMusicPlayer ? 'Hide Music Player' : 'Show Music Player'}
+          >
+            <SafeIcon icon={FiHeadphones} />
+          </motion.button>
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

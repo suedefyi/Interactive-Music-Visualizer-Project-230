@@ -6,15 +6,20 @@ import Header from './Header';
 import ControlPanel from './ControlPanel';
 import VisualizationCanvas from './VisualizationCanvas';
 import MobileControls from './MobileControls';
+import MusicPlayer from '../MusicPlayer/MusicPlayer';
+import LofiBeatCreator from '../LofiBeatCreator/LofiBeatCreator';
 
 const Visualizer = ({ onShowGuide }) => {
   const { user, logout } = useAuth();
-  const { isListening, startMicrophone, stopMicrophone, audioData, frequencyData } = useAudio();
+  const { isListening, startMicrophone, stopMicrophone, audioData, frequencyData, connectMusicSource } = useAudio();
   
   const [selectedVisualization, setSelectedVisualization] = useState('bars');
   const [showControls, setShowControls] = useState(true);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
+  const [showLofiBeat, setShowLofiBeat] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
+  // Optimized settings with reduced default values
   const [settings, setSettings] = useState({
     sensitivity: 50,
     smoothing: 30,
@@ -25,7 +30,7 @@ const Visualizer = ({ onShowGuide }) => {
     contrast: 50,
     saturation: 75,
     blur: 0,
-    particleCount: 100
+    particleCount: 50 // Reduced from 100
   });
 
   useEffect(() => {
@@ -56,9 +61,20 @@ const Visualizer = ({ onShowGuide }) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleAudioSourceChange = (audioElement) => {
+    connectMusicSource(audioElement);
+  };
+
+  const calculatePanelOffset = () => {
+    let offset = 0;
+    if (showLofiBeat) offset += 384; // 96 * 4 (w-96)
+    if (showMusicPlayer) offset += 320; // 80 * 4 (w-80)
+    return offset;
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
-      <Header 
+      <Header
         user={user}
         onLogout={handleLogout}
         onShowGuide={onShowGuide}
@@ -66,14 +82,45 @@ const Visualizer = ({ onShowGuide }) => {
         onMicrophoneToggle={handleMicrophoneToggle}
         onToggleControls={() => setShowControls(!showControls)}
         showControls={showControls}
+        onToggleMusicPlayer={() => setShowMusicPlayer(!showMusicPlayer)}
+        showMusicPlayer={showMusicPlayer}
+        onToggleLofiBeat={() => setShowLofiBeat(!showLofiBeat)}
+        showLofiBeat={showLofiBeat}
       />
 
       <div className="flex h-screen pt-16">
         <AnimatePresence>
+          {showLofiBeat && (
+            <LofiBeatCreator
+              isVisible={showLofiBeat}
+              onToggle={() => setShowLofiBeat(!showLofiBeat)}
+              onAudioSourceChange={handleAudioSourceChange}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showMusicPlayer && (
+            <motion.div
+              initial={{ x: showLofiBeat ? -320 : -320 }}
+              animate={{ x: showLofiBeat ? 384 : 0 }}
+              exit={{ x: showLofiBeat ? -320 : -320 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            >
+              <MusicPlayer
+                onAudioSourceChange={handleAudioSourceChange}
+                isVisible={showMusicPlayer}
+                onToggle={() => setShowMusicPlayer(!showMusicPlayer)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
           {showControls && !isMobile && (
             <motion.div
               initial={{ x: -300 }}
-              animate={{ x: 0 }}
+              animate={{ x: calculatePanelOffset() }}
               exit={{ x: -300 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="w-80 bg-black/20 backdrop-blur-lg border-r border-white/10 overflow-y-auto"

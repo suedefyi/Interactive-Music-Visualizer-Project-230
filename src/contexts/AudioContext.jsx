@@ -12,11 +12,14 @@ export const useAudio = () => {
 
 export const AudioProvider = ({ children }) => {
   const [isListening, setIsListening] = useState(false);
-  const [audioData, setAudioData] = useState(new Uint8Array(256));
-  const [frequencyData, setFrequencyData] = useState(new Uint8Array(256));
+  const [audioData, setAudioData] = useState(new Uint8Array(128)); // Reduced size
+  const [frequencyData, setFrequencyData] = useState(new Uint8Array(128)); // Reduced size
+  const [audioSource, setAudioSource] = useState('microphone'); // 'microphone' or 'music'
+
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const microphoneRef = useRef(null);
+  const musicSourceRef = useRef(null);
   const animationRef = useRef(null);
 
   const startMicrophone = useCallback(async () => {
@@ -26,31 +29,18 @@ export const AudioProvider = ({ children }) => {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       analyserRef.current = audioContextRef.current.createAnalyser();
       
-      analyserRef.current.fftSize = 512;
-      analyserRef.current.smoothingTimeConstant = 0.8;
+      // Optimized settings for better performance
+      analyserRef.current.fftSize = 256; // Reduced from 512
+      analyserRef.current.smoothingTimeConstant = 0.7; // Reduced smoothing
       
       const source = audioContextRef.current.createMediaStreamSource(stream);
       source.connect(analyserRef.current);
       
       microphoneRef.current = stream;
+      setAudioSource('microphone');
       setIsListening(true);
       
-      const updateAudioData = () => {
-        if (analyserRef.current) {
-          const bufferLength = analyserRef.current.frequencyBinCount;
-          const dataArray = new Uint8Array(bufferLength);
-          const frequencyArray = new Uint8Array(bufferLength);
-          
-          analyserRef.current.getByteTimeDomainData(dataArray);
-          analyserRef.current.getByteFrequencyData(frequencyArray);
-          
-          setAudioData(dataArray);
-          setFrequencyData(frequencyArray);
-        }
-        animationRef.current = requestAnimationFrame(updateAudioData);
-      };
-      
-      updateAudioData();
+      startAudioProcessing();
       
       return { success: true };
     } catch (error) {
@@ -59,10 +49,71 @@ export const AudioProvider = ({ children }) => {
     }
   }, []);
 
+  const connectMusicSource = useCallback((audioElement) => {
+    if (!audioElement) {
+      stopMicrophone();
+      return;
+    }
+
+    try {
+      // Stop microphone if it's running
+      if (microphoneRef.current) {
+        microphoneRef.current.getTracks().forEach(track => track.stop());
+        microphoneRef.current = null;
+      }
+
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      
+      // Optimized settings
+      analyserRef.current.fftSize = 256;
+      analyserRef.current.smoothingTimeConstant = 0.7;
+      
+      const source = audioContextRef.current.createMediaElementSource(audioElement);
+      source.connect(analyserRef.current);
+      analyserRef.current.connect(audioContextRef.current.destination);
+      
+      musicSourceRef.current = source;
+      setAudioSource('music');
+      setIsListening(true);
+      
+      startAudioProcessing();
+    } catch (error) {
+      console.error('Error connecting music source:', error);
+    }
+  }, []);
+
+  const startAudioProcessing = useCallback(() => {
+    const updateAudioData = () => {
+      if (analyserRef.current) {
+        const bufferLength = analyserRef.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        const frequencyArray = new Uint8Array(bufferLength);
+        
+        analyserRef.current.getByteTimeDomainData(dataArray);
+        analyserRef.current.getByteFrequencyData(frequencyArray);
+        
+        // Throttle updates for better performance (every other frame)
+        if (animationRef.current % 2 === 0) {
+          setAudioData(dataArray);
+          setFrequencyData(frequencyArray);
+        }
+      }
+      
+      animationRef.current = requestAnimationFrame(updateAudioData);
+    };
+    
+    updateAudioData();
+  }, []);
+
   const stopMicrophone = useCallback(() => {
     if (microphoneRef.current) {
       microphoneRef.current.getTracks().forEach(track => track.stop());
       microphoneRef.current = null;
+    }
+    
+    if (musicSourceRef.current) {
+      musicSourceRef.current = null;
     }
     
     if (audioContextRef.current) {
@@ -77,16 +128,18 @@ export const AudioProvider = ({ children }) => {
     
     analyserRef.current = null;
     setIsListening(false);
-    setAudioData(new Uint8Array(256));
-    setFrequencyData(new Uint8Array(256));
+    setAudioData(new Uint8Array(128));
+    setFrequencyData(new Uint8Array(128));
   }, []);
 
   const value = {
     isListening,
     audioData,
     frequencyData,
+    audioSource,
     startMicrophone,
-    stopMicrophone
+    stopMicrophone,
+    connectMusicSource
   };
 
   return (

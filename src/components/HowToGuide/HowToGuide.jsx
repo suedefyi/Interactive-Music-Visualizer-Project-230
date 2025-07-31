@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiMic, FiSettings, FiBarChart, FiSmartphone, FiX, FiChevronRight, FiChevronLeft } = FiIcons;
+const { FiMic, FiSettings, FiBarChart, FiSmartphone, FiX, FiChevronRight, FiChevronLeft, FiHeadphones, FiRadio } = FiIcons;
 
 const steps = [
   {
     title: "Welcome to Music Visualizer",
-    content: "Transform your audio into stunning visual experiences with real-time visualizations that respond to your microphone input.",
+    content: "Transform your audio into stunning visual experiences with real-time visualizations, music player, and lofi beat creator.",
     icon: FiBarChart,
     image: "🎵"
   },
@@ -19,8 +19,20 @@ const steps = [
     image: "🎤"
   },
   {
+    title: "Upload Music Files",
+    content: "Use the headphones button to open the music player. Upload your favorite tracks and watch them come to life with visualizations.",
+    icon: FiHeadphones,
+    image: "🎧"
+  },
+  {
+    title: "Create Lofi Beats",
+    content: "Click the radio button to open the lofi beat creator. Make your own chill beats with drums, melodies, and ambient visuals.",
+    icon: FiRadio,
+    image: "📻"
+  },
+  {
     title: "Choose Your Visualization",
-    content: "Select from 10 different visualization types including frequency bars, circular spectrum, particles, and more. Each responds uniquely to your audio.",
+    content: "Select from multiple visualization types including frequency bars, circular spectrum, particles, and more. Each responds uniquely to your audio.",
     icon: FiBarChart,
     image: "🌈"
   },
@@ -38,7 +50,7 @@ const steps = [
   },
   {
     title: "Ready to Visualize!",
-    content: "You're all set! Play some music, speak, or make sounds near your microphone and watch the magic happen. Access this guide anytime from the help menu.",
+    content: "You're all set! Play music, create beats, or use your microphone to watch the magic happen. Access this guide anytime from the help menu.",
     icon: FiChevronRight,
     image: "✨"
   }
@@ -96,7 +108,6 @@ const HowToGuide = ({ onComplete }) => {
             >
               {steps[currentStep].image}
             </motion.div>
-            
             <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <SafeIcon icon={steps[currentStep].icon} className="text-white text-xl" />
             </div>
